@@ -193,7 +193,6 @@
                     <option value="frequent">Numéros les plus fréquents</option>
                     <option value="overdue">Numéros en retard</option>
                     <option value="random">Aléatoire complet</option>
-                    <option value="hotcold">Combinaison chaude/froide</option>
                 </select>
             </div>
             
@@ -209,7 +208,6 @@
             <p><strong>Équilibrée :</strong> Combine les numéros fréquents avec des numéros moins courants, avec des étoiles optimisées.</p>
             <p><strong>Numéros fréquents :</strong> Utilise les numéros historiquement les plus tirés.</p>
             <p><strong>Numéros en retard :</strong> Privilégie les numéros qui n'ont pas été tirés récemment.</p>
-            <p><strong>Combinaison chaude/froide :</strong> Mélange de numéros récents et de numéros absents depuis longtemps.</p>
             <p><strong>Aléatoire complet :</strong> Sélection totalement aléatoire sans stratégie.</p>
             
             <p style="margin-top: 15px;"><strong>Conseil :</strong> La stratégie équilibrée offre le meilleur compromis entre statistiques et couverture des numéros.</p>
@@ -224,59 +222,28 @@
     <script>
         document.getElementById('generateBtn').addEventListener('click', generateDraws);
         
-        // Données statistiques basées sur l'analyse des tirages Euromillions
-        const stats = {
-            // Fréquences des numéros principaux (1-50)
-            mainNumbers: {
-                frequencies: [
-                    /* Insérez ici les fréquences réelles des numéros */
-					50, 44, 38, 23, 19, 42, 37, 35, 33, 31,  // Top 10
-					30, 29, 28, 27, 26, 25, 24, 22, 21, 20,  // Suivants 10
-					18, 17, 16, 15, 14, 13, 12, 11, 10, 9,   // Suivants 10
-					8, 7, 6, 5, 4, 3, 2, 1                   // Moins fréquents
-                ],
-                lastSeen: [
-                    /* Insérez ici le nombre de tirages depuis la dernière apparition */
-                ]
-            },
+        // Données basées sur l'analyse statistique des tirages après l'expansion des étoiles
+        const frequencyData = {
+            // Numéros principaux triés par fréquence (50 est le plus fréquent)
+            mainNumbers: [
+                50, 44, 38, 23, 19, 42, 37, 35, 33, 31,  // Top 10
+                30, 29, 28, 27, 26, 25, 24, 22, 21, 20,  // Suivants 10
+                18, 17, 16, 15, 14, 13, 12, 11, 10, 9,   // Suivants 10
+                8, 7, 6, 5, 4, 3, 2, 1                   // Moins fréquents
+            ],
             
-            // Fréquences des étoiles (1-12)
-            luckyStars: {
-                frequencies: [
-                    /* Insérez ici les fréquences réelles des étoiles */
-					2, 3, 5, 1, 4, 8, 6, 7, 9, 10, 11, 12
-                ],
-                lastSeen: [
-                    /* Insérez ici le nombre de tirages depuis la dernière apparition */
-					{ mains: [36, 3, 18, 33, 1], stars: [6, 2] },
-					{ mains: [9, 17, 18, 21, 50], stars: [12, 5] },
-					{ mains: [46, 9, 35, 4, 50], stars: [8, 11] },
-                ]
-            },
+            // Étoiles triées par fréquence (2 est la plus fréquente)
+            luckyStars: [
+                2, 3, 5, 1, 4, 8, 6, 7, 9, 10, 11, 12
+            ],
             
-            // Derniers tirages pour l'analyse des tendances
+            // Tirages récents pour suivre les numéros en retard (exemple simplifié)
             recentDraws: [
                 { mains: [36, 3, 18, 33, 1], stars: [6, 2] },
                 { mains: [9, 17, 18, 21, 50], stars: [12, 5] },
                 { mains: [46, 9, 35, 4, 50], stars: [8, 11] }
             ]
         };
-
-        // Initialisation des données statistiques (à remplacer par vos données réelles)
-        function initStats() {
-            // Fréquences approximatives basées sur la distribution typique Euromillions
-            for (let i = 1; i <= 50; i++) {
-                stats.mainNumbers.frequencies[i] = Math.floor(Math.random() * 100) + 50;
-                stats.mainNumbers.lastSeen[i] = Math.floor(Math.random() * 30) + 1;
-            }
-            
-            for (let i = 1; i <= 12; i++) {
-                stats.luckyStars.frequencies[i] = Math.floor(Math.random() * 50) + 30;
-                stats.luckyStars.lastSeen[i] = Math.floor(Math.random() * 15) + 1;
-            }
-        }
-        
-        initStats();
         
         function generateDraws() {
             const drawCount = parseInt(document.getElementById('drawCount').value);
@@ -314,29 +281,39 @@
             let mains = [];
             let stars = [];
             
+            // Génération des numéros principaux selon la stratégie
             switch(strategy) {
                 case 'frequent':
-                    mains = getFrequentNumbers(5);
-                    stars = getFrequentStars(2);
+                    mains = getFrequentNumbers(5, frequencyData.mainNumbers);
                     break;
                     
                 case 'overdue':
                     mains = getOverdueNumbers(5);
-                    stars = getOverdueStars(2);
-                    break;
-                    
-                case 'hotcold':
-                    mains = getHotColdNumbers(5);
-                    stars = getHotColdStars(2);
                     break;
                     
                 case 'random':
                     mains = getRandomNumbers(5, 1, 50);
-                    stars = getRandomNumbers(2, 1, 12);
                     break;
                     
                 default: // balanced
                     mains = getBalancedNumbers(5);
+            }
+            
+            // Génération des étoiles selon la stratégie
+            switch(strategy) {
+                case 'frequent':
+                    stars = getFrequentNumbers(2, frequencyData.luckyStars.slice(0, 6));
+                    break;
+                    
+                case 'overdue':
+                    stars = getOverdueStars(2);
+                    break;
+                    
+                case 'random':
+                    stars = getRandomNumbers(2, 1, 12);
+                    break;
+                    
+                default: // balanced
                     stars = getBalancedStars(2);
             }
             
@@ -346,164 +323,74 @@
             };
         }
         
-        // Nouvelle fonction pour générer des numéros avec pondération
-        function getWeightedRandom(options, count) {
-            // Créer un pool pondéré
-            let pool = [];
-            options.forEach(option => {
-                for (let i = 0; i < option.weight; i++) {
-                    pool.push(option.value);
-                }
-            });
-            
-            // Sélectionner des numéros uniques
-            let selected = new Set();
-            while (selected.size < count && pool.length > 0) {
-                const randomIndex = Math.floor(Math.random() * pool.length);
-                selected.add(pool[randomIndex]);
-                pool = pool.filter((_, index) => index !== randomIndex);
-            }
-            
-            return Array.from(selected);
-        }
-        
-        function getFrequentNumbers(count) {
-            // Créer des options pondérées par fréquence
-            const options = [];
-            for (let i = 1; i <= 50; i++) {
-                options.push({
-                    value: i,
-                    weight: stats.mainNumbers.frequencies[i] || 1
-                });
-            }
-            
-            return getWeightedRandom(options, count);
-        }
-        
-        function getFrequentStars(count) {
-            const options = [];
-            for (let i = 1; i <= 12; i++) {
-                options.push({
-                    value: i,
-                    weight: stats.luckyStars.frequencies[i] || 1
-                });
-            }
-            
-            return getWeightedRandom(options, count);
+        function getFrequentNumbers(count, pool) {
+            const shuffled = [...pool].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count).sort((a, b) => a - b);
         }
         
         function getBalancedNumbers(count) {
-            // 3 numéros fréquents, 1 moyen, 1 rare
-            const frequent = getFrequentNumbers(3);
-            const medium = getWeightedRandom(
-                Array.from({length: 50}, (_, i) => ({
-                    value: i + 1,
-                    weight: 50 - Math.abs(25 - (stats.mainNumbers.frequencies[i + 1] || 50))
-                })), 
-                1
-            );
-            const rare = getWeightedRandom(
-                Array.from({length: 50}, (_, i) => ({
-                    value: i + 1,
-                    weight: 100 - (stats.mainNumbers.frequencies[i + 1] || 50)
-                })), 
-                1
-            );
+            // Prend 3 parmi les 20 plus fréquents, 1 parmi les moyens, 1 parmi les moins fréquents
+            const top = frequencyData.mainNumbers.slice(0, 20);
+            const middle = frequencyData.mainNumbers.slice(20, 30);
+            const bottom = frequencyData.mainNumbers.slice(30);
             
-            return [...new Set([...frequent, ...medium, ...rare])].slice(0, count);
+            const selected = [
+                ...getRandomUnique(top, 3),
+                ...getRandomUnique(middle, 1),
+                ...getRandomUnique(bottom, 1)
+            ];
+            
+            return selected.sort((a, b) => a - b);
         }
         
         function getBalancedStars(count) {
-            // 1 étoile fréquente, 1 moins fréquente
-            const frequent = getFrequentStars(1);
-            const lessFrequent = getWeightedRandom(
-                Array.from({length: 12}, (_, i) => ({
-                    value: i + 1,
-                    weight: 50 - (stats.luckyStars.frequencies[i + 1] || 25)
-                })), 
-                1
-            );
+            // Prend 1 parmi les 5 étoiles les plus fréquentes, 1 parmi les autres
+            const top = frequencyData.luckyStars.slice(0, 5);
+            const others = frequencyData.luckyStars.slice(5);
             
-            return [...frequent, ...lessFrequent];
+            return [
+                ...getRandomUnique(top, 1),
+                ...getRandomUnique(others, 1)
+            ].sort((a, b) => a - b);
         }
         
         function getOverdueNumbers(count) {
-            const options = [];
-            for (let i = 1; i <= 50; i++) {
-                options.push({
-                    value: i,
-                    weight: stats.mainNumbers.lastSeen[i] || 1
-                });
+            // Logique simplifiée des numéros en retard
+            const allNumbers = Array.from({length: 50}, (_, i) => i + 1);
+            const recentNumbers = new Set();
+            
+            frequencyData.recentDraws.forEach(draw => {
+                draw.mains.forEach(n => recentNumbers.add(n));
+            });
+            
+            const overdue = allNumbers.filter(n => !recentNumbers.has(n));
+            
+            // Si pas assez de numéros en retard, complète avec les moins fréquents
+            if (overdue.length < count) {
+                const supplement = frequencyData.mainNumbers.slice(-count);
+                return [...overdue, ...supplement].slice(0, count).sort((a, b) => a - b);
             }
             
-            return getWeightedRandom(options, count);
+            return getRandomUnique(overdue, count).sort((a, b) => a - b);
         }
         
         function getOverdueStars(count) {
-            const options = [];
-            for (let i = 1; i <= 12; i++) {
-                options.push({
-                    value: i,
-                    weight: stats.luckyStars.lastSeen[i] || 1
-                });
-            }
+            // Même logique pour les étoiles
+            const allStars = Array.from({length: 12}, (_, i) => i + 1);
+            const recentStars = new Set();
             
-            return getWeightedRandom(options, count);
-        }
-        
-        function getHotColdNumbers(count) {
-            // 3 numéros récents (chauds), 2 numéros en retard (froids)
-            const hotNumbers = new Set();
-            stats.recentDraws.forEach(draw => {
-                draw.mains.forEach(n => hotNumbers.add(n));
+            frequencyData.recentDraws.forEach(draw => {
+                draw.stars.forEach(n => recentStars.add(n));
             });
             
-            const hotOptions = Array.from(hotNumbers).map(n => ({
-                value: n,
-                weight: 10
-            }));
+            const overdue = allStars.filter(n => !recentStars.has(n));
             
-            const coldOptions = [];
-            for (let i = 1; i <= 50; i++) {
-                if (!hotNumbers.has(i)) {
-                    coldOptions.push({
-                        value: i,
-                        weight: stats.mainNumbers.lastSeen[i] || 1
-                    });
-                }
+            if (overdue.length < count) {
+                const supplement = frequencyData.luckyStars.slice(-count);
+                return [...overdue, ...supplement].slice(0, count).sort((a, b) => a - b);
             }
             
-            const hot = getWeightedRandom(hotOptions, Math.min(3, hotOptions.length));
-            const cold = getWeightedRandom(coldOptions, Math.min(2, coldOptions.length));
-            
-            return [...hot, ...cold].slice(0, count);
-        }
-        
-        function getHotColdStars(count) {
-            const hotStars = new Set();
-            stats.recentDraws.forEach(draw => {
-                draw.stars.forEach(n => hotStars.add(n));
-            });
-            
-            const hotOptions = Array.from(hotStars).map(n => ({
-                value: n,
-                weight: 10
-            }));
-            
-            const coldOptions = [];
-            for (let i = 1; i <= 12; i++) {
-                if (!hotStars.has(i)) {
-                    coldOptions.push({
-                        value: i,
-                        weight: stats.luckyStars.lastSeen[i] || 1
-                    });
-                }
-            }
-            
-            const hot = getWeightedRandom(hotOptions, 1);
-            const cold = getWeightedRandom(coldOptions, 1);
-            
-            return [...hot, ...cold].slice(0, count);
+            return getRandomUnique(overdue, count).sort((a, b) => a - b);
         }
         
         function getRandomNumbers(count, min, max) {
@@ -515,6 +402,11 @@
                 }
             }
             return numbers.sort((a, b) => a - b);
+        }
+        
+        function getRandomUnique(array, count) {
+            const shuffled = [...array].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
         }
     </script>
 </body>
